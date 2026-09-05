@@ -20,9 +20,8 @@ untuk mengatur nama kamu silahkan ubah di main.py
 gunakan perintah py main.py
 
 ## Cara Pakai
-- **Chat**: Ketik pesan di kolom chat. Kuro akan merespons menggunakan Groq.
-- **Info Sistem**: Gunakan tombol di sidebar untuk mendapatkan data CPU, GPU, RAM, disk, baterai, atau uptime.
-- **Operasi File**: Pilih opsi di menu untuk membuat file baru, membaca file, atau memindai struktur proyek.
+- **Chat**: Ketik pesan di kolom chat. Kuro akan merespons.
+- **Voice**: Berbicara dengan kuro secara realtime.
 
 ## Kontribusi
 Dikembangkan oleh saya sendiri
