@@ -1,6 +1,10 @@
-# Kuroyami AI Assistant
+# Kuroyami AI Agent
 
-Kuro adalah AI VTuber yang membantu kamu memonitor PC, membuka aplikasi, dan menulis kode. Proyek ini dibangun di atas **Python** dengan antarmuka web berbasis Flask dan integrasi API Groq.
+Kuro adalah AI yang membantu kamu memonitor PC yang menggunakan windows, membuka aplikasi, dan menulis kode. Proyek ini dibangun di atas **Python** dengan antarmuka web berbasis Flask dan integrasi API Groq dan OpenRouter.
+
+> [!NOTE]
+> - Pengembangan proyek ini sudah dihentikan
+> - Proyek ini opensource, kamu bisa mengubah sebebeas mungkin
 
 ## Fitur
 - **Monitoring sistem** – CPU, GPU, RAM, disk, baterai, dan uptime.
@@ -9,8 +13,11 @@ Kuro adalah AI VTuber yang membantu kamu memonitor PC, membuka aplikasi, dan men
 - **API Groq** – Memanfaatkan Groq untuk balasan cepat.
 - **Instalasi simpel** – Hanya install dependensi Python dan jalankan.
 
-## Cara Memulai
+## Sebelum Menggunakan
+untuk mengatur nama kamu silahkan ubah di main.py
 
+## Cara Memulai
+gunakan perintah py main.py
 
 ## Cara Pakai
 - **Chat**: Ketik pesan di kolom chat. Kuro akan merespons menggunakan Groq.
@@ -18,7 +25,7 @@ Kuro adalah AI VTuber yang membantu kamu memonitor PC, membuka aplikasi, dan men
 - **Operasi File**: Pilih opsi di menu untuk membuat file baru, membaca file, atau memindai struktur proyek.
 
 ## Kontribusi
-Silakan buka issue atau pull request. Lihat panduan kontribusi di `CONTRIBUTING.md`.
+Dikembangkan oleh saya sendiri
 
 ## Lisensi
 Proyek ini dilisensikan di bawah MIT License – lihat file [LICENSE](LICENSE) untuk detail.
