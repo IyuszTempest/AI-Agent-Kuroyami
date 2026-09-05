@@ -1,0 +1,17 @@
+flask
+pywebview
+python-dotenv
+groq
+openai
+requests
+edge-tts
+soundfile
+sounddevice
+numpy
+scipy
+python-docx
+pypdf
+pyautogui
+WMI
+winrt-Windows.Media.Control
+winrt-Windows.Foundation

@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kuroyami AI Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Quicksand", sans-serif;
+      }
+      .glass-box {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+      .dark .glass-box {
+        background: rgba(17, 24, 39, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .glass-menu {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      }
+      .dark .glass-menu {
+        background: rgba(17, 24, 39, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      #waifu-img {
+        transition: opacity 0.4s ease-in-out;
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-900 text-white h-screen w-screen flex justify-center items-center m-0 p-0 overflow-hidden"
+  >
+    <div
+      id="main-container"
+      class="relative w-full h-full flex flex-col items-center justify-between overflow-hidden p-6 transition-colors duration-300"
+    >
+      <div
+        class="absolute inset-0 w-full h-full overflow-hidden flex justify-center items-end pointer-events-none"
+      >
+        <img
+          id="waifu-img"
+          src="/media/images/normal.png"
+          alt="Kuroyami"
+          class="h-[92%] w-auto object-contain opacity-100"
+        />
+      </div>
+
+      <!-- Top Bar: Status, Model Title, & Menu -->
+      <div class="w-full max-w-2xl flex justify-between items-center z-30 pt-2">
+        <div class="flex items-center space-x-2 w-24">
+          <span
+            id="status-dot"
+            class="w-3 h-3 rounded-full bg-green-500"
+          ></span>
+          <span
+            id="status-text"
+            class="text-xs font-bold uppercase tracking-wider"
+            >Idle</span
+          >
+        </div>
+
+        <div
+          id="current-model-title"
+          class="text-center font-bold text-sm flex-1"
+        >
+          Kuroyami 1.0
+        </div>
+
+        <div class="relative flex justify-end w-24">
+          <button
+            id="menu-btn"
+            onclick="toggleMenu(event)"
+            class="focus:outline-none transition p-1"
+          >
+            <svg
+              id="menu-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu Model -->
+          <div
+            id="dropdown-menu"
+            class="hidden absolute top-10 right-0 w-48 glass-menu p-3 flex flex-col space-y-2 z-40"
+          >
+            <span
+              class="font-bold text-[11px] text-center uppercase tracking-wider border-b border-gray-500/20 pb-1"
+              >Switch Model</span
+            >
+
+            <button
+              onclick="switchModel('Kuroyami 1.0')"
+              class="flex items-center justify-between text-left text-xs font-semibold px-2 py-1.5 rounded-lg hover:bg-indigo-500/10 transition"
+            >
+              <span>Kuroyami 1.0</span>
+              <span
+                id="check-kuroyami-1"
+                class="text-xs text-indigo-500 font-bold"
+                >✓</span
+              >
+            </button>
+
+            <button
+              onclick="switchModel('Kuro Learning 1.5')"
+              class="flex items-center justify-between text-left text-xs font-semibold px-2 py-1.5 rounded-lg hover:bg-indigo-500/10 transition"
+            >
+              <span>Kuro Learning 1.5</span>
+              <span
+                id="check-kuro-learning"
+                class="text-xs text-indigo-500 font-bold hidden"
+                >✓</span
+              >
+            </button>
+
+            <button
+              onclick="switchModel('Kuro Pro 2.0')"
+              class="flex items-center justify-between text-left text-xs font-semibold px-2 py-1.5 rounded-lg hover:bg-indigo-500/10 transition"
+            >
+              <span>Kuro Pro 2.0</span>
+              <span
+                id="check-kuro-pro"
+                class="text-xs text-indigo-500 font-bold hidden"
+                >✓</span
+              >
+            </button>
+
+            <div class="border-t border-gray-500/20 pt-1 mt-1">
+              <button
+                onclick="openSettings()"
+                class="w-full text-center text-xs font-semibold py-1 transition opacity-80 hover:opacity-100"
+              >
+                Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full flex-1"></div>
+
+      <!-- Modal Pop-Up Baca Selengkapnya -->
+      <div
+        id="detail-modal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden transition-opacity duration-300"
+      >
+        <div
+          class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col max-h-[80vh] relative animate-fade-in"
+        >
+          <div
+            class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700"
+          >
+            <div class="flex items-center space-x-2">
+              <span
+                class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse"
+              ></span>
+              <h3
+                class="font-bold text-sm tracking-wide text-gray-800 dark:text-gray-100 uppercase"
+              >
+                Kuroyami - Respon Lengkap
+              </h3>
+            </div>
+            <button
+              onclick="closeDetailModal()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg font-bold p-1"
+            >
+              ✕
+            </button>
+          </div>
+          <div
+            class="py-4 overflow-y-auto space-y-4 text-xs leading-relaxed text-gray-700 dark:text-gray-200"
+            id="modal-body-content"
+          ></div>
+          <div
+            class="pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end"
+          >
+            <button
+              onclick="closeDetailModal()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full max-w-md z-30 flex flex-col items-center">
+        <div
+          class="w-full glass-box px-6 py-4 flex flex-col items-center text-center mb-3"
+        >
+          <span
+            id="name-tag"
+            class="font-bold tracking-wide text-xs mb-1 uppercase opacity-80"
+            >kuroyami</span
+          >
+          <p id="dialogue-text" class="text-xs font-medium leading-relaxed">
+            Halo Yus! Kuroyami udah siap online nih. Ada yang bisa dibantu hari
+            ini?
+          </p>
+          <button
+            id="read-more-btn"
+            onclick="openDetailModal()"
+            class="hidden mt-2 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+          >
+            <span>📖 Baca Selengkapnya...</span>
+          </button>
+        </div>
+
+        <!-- Input Section -->
+        <div class="relative w-full">
+          <div
+            id="upload-popup"
+            class="hidden absolute bottom-16 right-0 w-44 glass-menu p-3 flex flex-col items-center justify-center text-center z-40 shadow-2xl"
+          >
+            <span class="font-bold text-xs mb-1">Upload File</span>
+            <span class="text-[9px] opacity-70 mb-2"
+              >Pilih dokumen atau media</span
+            >
+            <label
+              class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold py-1.5 px-3 rounded-lg transition w-full text-center"
+            >
+              Cari File
+              <input
+                type="file"
+                id="file-input"
+                multiple
+                onchange="handleFileSelect(event)"
+              />
+            </label>
+          </div>
+          <div
+            id="file-preview-container"
+            class="hidden mb-2 p-2 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 max-h-36 overflow-y-auto custom-scrollbar flex flex-wrap gap-2"
+          ></div>
+          <form
+            id="chat-form"
+            onsubmit="sendText(event)"
+            class="w-full bg-[#0f0a13] border border-white/10 rounded-full py-3 px-6 flex justify-between items-center shadow-2xl"
+          >
+            <input
+              type="text"
+              id="user-input"
+              placeholder="Ketik perintah atau berbicara langsung..."
+              class="w-full bg-transparent text-gray-200 text-xs font-medium focus:outline-none placeholder-gray-500"
+              autocomplete="off"
+            />
+            <div class="flex items-center space-x-3 ml-3">
+              <button
+                type="button"
+                id="plus-btn"
+                onclick="toggleUpload(event)"
+                class="hidden text-gray-400 hover:text-white transition focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="w-5 h-5 pointer-events-none"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
+              </button>
+              <button
+                type="submit"
+                class="text-white hover:text-gray-300 transition focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="w-5 h-5 pointer-events-none"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                  />
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentExpression = "normal";
+      let isMenuOpen = false;
+      let isUploadOpen = false;
+      let activeModel = "Kuroyami 1.0";
+      let selectedFiles = [];
+
+      let currentFullResponse = "";
+      let currentMediaRefs = null;
+
+      function updateKuroDialogue(fullText, mediaRefs = null) {
+        if (!fullText) return;
+
+        currentFullResponse = fullText;
+        currentMediaRefs = mediaRefs;
+
+        const dialogueEl = document.getElementById("dialogue-text");
+        const readMoreBtn = document.getElementById("read-more-btn");
+
+        const MAX_LIMIT = 120;
+
+        if (fullText.length > MAX_LIMIT) {
+          dialogueEl.innerText = fullText.substring(0, MAX_LIMIT) + "...";
+          readMoreBtn.classList.remove("hidden");
+        } else {
+          dialogueEl.innerText = fullText;
+          readMoreBtn.classList.add("hidden");
+        }
+      }
+
+      function openDetailModal() {
+        const modal = document.getElementById("detail-modal");
+        const modalBody = document.getElementById("modal-body-content");
+
+        let formattedText = currentFullResponse
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0)
+          .join(
+            '</p><p class="mb-3 text-sm text-gray-800 dark:text-gray-200 leading-relaxed break-words text-left">',
+          );
+
+        let contentHtml = `
+      <div class="max-h-[65vh] overflow-y-auto px-1 pr-2 custom-scrollbar text-left">
+        <p class="mb-3 text-sm text-gray-800 dark:text-gray-200 leading-relaxed break-words text-left">
+          ${formattedText}
+        </p>
+      </div>
+    `;
+
+        if (currentMediaRefs) {
+          contentHtml += `
+        <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 text-left">
+          <span class="font-semibold block text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+            📷 Referensi Media:
+          </span>
+      `;
+
+          if (currentMediaRefs.type === "image") {
+            contentHtml += `
+          <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-black/5">
+            <img src="${currentMediaRefs.url}" alt="Media Ref" class="w-full max-h-60 object-contain mx-auto">
+          </div>
+        `;
+          } else if (currentMediaRefs.type === "video") {
+            contentHtml += `
+          <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+            <video controls class="w-full max-h-60 rounded-xl"><source src="${currentMediaRefs.url}"></video>
+          </div>
+        `;
+          } else if (currentMediaRefs.type === "link") {
+            contentHtml += `
+          <a href="${currentMediaRefs.url}" target="_blank" class="inline-flex items-center gap-1 text-indigo-500 hover:text-indigo-600 underline text-xs break-all">
+            🔗 ${currentMediaRefs.url}
+          </a>
+        `;
+          }
+
+          contentHtml += `</div>`;
+        }
+
+        modalBody.innerHTML = contentHtml;
+        modal.classList.remove("hidden");
+      }
+
+      function closeDetailModal() {
+        document.getElementById("detail-modal").classList.add("hidden");
+      }
+
+      const originalAudioPlay = window.HTMLAudioElement.prototype.play;
+      window.HTMLAudioElement.prototype.play = function () {
+        let isVoiceActive =
+          window.kuroVoiceEnabled ??
+          localStorage.getItem("suara_kuro") !== "false";
+        if (!isVoiceActive) {
+          console.log("Audio Kuro diblokir karena toggle mati.");
+          return Promise.resolve();
+        }
+        return originalAudioPlay.apply(this, arguments);
+      };
+
+      function toggleMenu(event) {
+        event.stopPropagation();
+        isMenuOpen = !isMenuOpen;
+        const menu = document.getElementById("dropdown-menu");
+        const icon = document.getElementById("menu-icon");
+
+        if (isMenuOpen) {
+          menu.classList.remove("hidden");
+          icon.innerHTML =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />';
+          if (isUploadOpen) toggleUpload(event);
+        } else {
+          menu.classList.add("hidden");
+          icon.innerHTML =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />';
+        }
+      }
+
+      function toggleUpload(event) {
+        event.stopPropagation();
+        isUploadOpen = !isUploadOpen;
+        const uploadPopup = document.getElementById("upload-popup");
+        const plusBtn = document.getElementById("plus-btn");
+
+        if (isUploadOpen) {
+          uploadPopup.classList.remove("hidden");
+          plusBtn.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+          if (isMenuOpen) {
+            isMenuOpen = false;
+            document.getElementById("dropdown-menu").classList.add("hidden");
+            document.getElementById("menu-icon").innerHTML =
+              '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />';
+          }
+        } else {
+          uploadPopup.classList.add("hidden");
+          plusBtn.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>';
+        }
+      }
+
+      window.onclick = function (event) {
+        if (
+          !event.target.closest("#dropdown-menu") &&
+          !event.target.closest("#menu-btn")
+        ) {
+          if (isMenuOpen) {
+            isMenuOpen = false;
+            document.getElementById("dropdown-menu").classList.add("hidden");
+            document.getElementById("menu-icon").innerHTML =
+              '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />';
+          }
+        }
+        if (
+          !event.target.closest("#upload-popup") &&
+          !event.target.closest("#plus-btn")
+        ) {
+          if (isUploadOpen) {
+            isUploadOpen = false;
+            document.getElementById("upload-popup").classList.add("hidden");
+            document.getElementById("plus-btn").innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>';
+          }
+        }
+      };
+
+      async function switchModel(modelName) {
+        activeModel = modelName;
+        document.getElementById("current-model-title").innerText = modelName;
+
+        const plusBtn = document.getElementById("plus-btn");
+        const checkKuroyami1 = document.getElementById("check-kuroyami-1");
+        const checkKuroLearning = document.getElementById(
+          "check-kuro-learning",
+        );
+        const checkKuroPro = document.getElementById("check-kuro-pro");
+
+        checkKuroyami1.classList.add("hidden");
+        checkKuroLearning.classList.add("hidden");
+        checkKuroPro.classList.add("hidden");
+
+        if (modelName === "Kuroyami 1.0") {
+          checkKuroyami1.classList.remove("hidden");
+          plusBtn.classList.add("hidden");
+          clearSelectedFile();
+          if (isUploadOpen) {
+            isUploadOpen = false;
+            document.getElementById("upload-popup").classList.add("hidden");
+            plusBtn.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>';
+          }
+        } else if (
+          modelName === "Kuro Learning 1.5" ||
+          modelName === "Kuro Pro 2.0"
+        ) {
+          if (modelName === "Kuro Learning 1.5")
+            checkKuroLearning.classList.remove("hidden");
+          if (modelName === "Kuro Pro 2.0")
+            checkKuroPro.classList.remove("hidden");
+          plusBtn.classList.remove("hidden");
+        }
+
+        isMenuOpen = false;
+        document.getElementById("dropdown-menu").classList.add("hidden");
+        document.getElementById("menu-icon").innerHTML =
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />';
+
+        try {
+          await fetch("/switch-model", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: modelName }),
+          });
+        } catch (e) {
+          console.error("Gagal sync model:", e);
+        }
+      }
+
+      function handleFileSelect(event) {
+        const input = event.target;
+        const files = Array.from(input.files);
+        if (!files.length) return;
+
+        selectedFiles = [...selectedFiles, ...files];
+        renderFilePreviews();
+
+        input.value = "";
+
+        if (isUploadOpen) {
+          isUploadOpen = false;
+          document.getElementById("upload-popup").classList.add("hidden");
+          document.getElementById("plus-btn").innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>';
+        }
+      }
+
+      function renderFilePreviews() {
+        const container = document.getElementById("file-preview-container");
+
+        if (selectedFiles.length === 0) {
+          container.innerHTML = "";
+          container.classList.add("hidden");
+          return;
+        }
+
+        container.classList.remove("hidden");
+        container.innerHTML = "";
+
+        selectedFiles.forEach((file, index) => {
+          const isImage = file.type.startsWith("image/");
+          const sizeFormatted = (file.size / 1024).toFixed(1) + " KB";
+
+          const itemEl = document.createElement("div");
+          itemEl.className =
+            "relative flex items-center gap-2 p-1.5 pr-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 text-xs shadow-sm max-w-[200px] truncate";
+
+          if (isImage) {
+            const imgUrl = URL.createObjectURL(file);
+            itemEl.innerHTML = `
+          <img src="${imgUrl}" class="w-8 h-8 object-cover rounded-md flex-shrink-0" />
+          <div class="truncate">
+            <p class="font-medium truncate text-[11px]">${file.name}</p>
+            <p class="text-[9px] text-gray-400">${sizeFormatted}</p>
+          </div>
+        `;
+          } else {
+            itemEl.innerHTML = `
+          <div class="w-8 h-8 bg-indigo-500/10 text-indigo-500 rounded-md flex items-center justify-center flex-shrink-0 font-bold text-[10px]">
+            📄
+          </div>
+          <div class="truncate">
+            <p class="font-medium truncate text-[11px]">${file.name}</p>
+            <p class="text-[9px] text-gray-400">${sizeFormatted}</p>
+          </div>
+        `;
+          }
+
+          const removeBtn = document.createElement("button");
+          removeBtn.type = "button";
+          removeBtn.className =
+            "absolute top-1 right-1 text-gray-400 hover:text-red-500 p-0.5 rounded-full transition focus:outline-none";
+          removeBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      `;
+          removeBtn.onclick = () => removeSelectedFile(index);
+
+          itemEl.appendChild(removeBtn);
+          container.appendChild(itemEl);
+        });
+      }
+
+      function removeSelectedFile(index) {
+        selectedFiles.splice(index, 1);
+        renderFilePreviews();
+      }
+
+      function clearSelectedFile() {
+        selectedFiles = [];
+        renderFilePreviews();
+      }
+
+      function openSettings() {
+        window.location.href = "/settings";
+      }
+
+      async function fetchStatus() {
+        try {
+          let response = await fetch("/status");
+          let data = await response.json();
+
+          if (data.text && data.text !== currentFullResponse) {
+            updateKuroDialogue(data.text, data.media || null);
+          }
+
+          let statusDot = document.getElementById("status-dot");
+          let statusText = document.getElementById("status-text");
+
+          let isVoiceAllowed = window.kuroVoiceEnabled ?? true;
+
+          if (data.is_speaking && isVoiceAllowed) {
+            statusDot.className =
+              "w-3 h-3 rounded-full bg-red-500 animate-pulse";
+            statusText.innerText = "Live";
+            statusText.className =
+              "text-xs font-bold uppercase tracking-wider text-red-500";
+          } else {
+            statusDot.className = "w-3 h-3 rounded-full bg-green-500";
+            statusText.innerText = "Idle";
+            statusText.className =
+              "text-xs font-bold uppercase tracking-wider text-green-400";
+
+            let audioElement = document.getElementById("kuro-audio-player");
+            if (audioElement) {
+              audioElement.pause();
+              audioElement.currentTime = 0;
+            }
+          }
+
+          if (currentExpression !== data.expression) {
+            currentExpression = data.expression;
+            let imgElement = document.getElementById("waifu-img");
+
+            imgElement.style.opacity = "0.3";
+            setTimeout(() => {
+              imgElement.src = `/media/images/${data.expression}.png`;
+              imgElement.style.opacity = "1";
+            }, 200);
+          }
+        } catch (err) {}
+      }
+
+      async function syncMainTheme() {
+        let isDark = true;
+        let isVoiceActive = true;
+
+        try {
+          let res = await fetch("/get-settings");
+          if (res.ok) {
+            let data = await res.json();
+            isDark = data.tema_gelap ?? true;
+            isVoiceActive = data.suara_kuro ?? true;
+          }
+        } catch (e) {
+          isDark = localStorage.getItem("tema_gelap") !== "false";
+          isVoiceActive = localStorage.getItem("suara_kuro") !== "false";
+        }
+
+        const mainContainer = document.getElementById("main-container");
+        if (isDark) {
+          document.documentElement.classList.add("dark");
+          mainContainer.classList.add("bg-gray-900", "text-white");
+          mainContainer.classList.remove("bg-white", "text-gray-900");
+        } else {
+          document.documentElement.classList.remove("dark");
+          mainContainer.classList.add("bg-white", "text-gray-900");
+          mainContainer.classList.remove("bg-gray-900", "text-white");
+        }
+
+        window.kuroVoiceEnabled = isVoiceActive;
+
+        const initialText = document
+          .getElementById("dialogue-text")
+          .innerText.trim();
+        if (initialText) {
+          updateKuroDialogue(initialText);
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", syncMainTheme);
+
+      async function sendText(event) {
+        event.preventDefault();
+        let inputField = document.getElementById("user-input");
+        let text = inputField.value.trim();
+
+        if (!text && selectedFiles.length === 0) return;
+
+        inputField.value = "";
+        document.getElementById("dialogue-text").innerText =
+          "Sedang memproses...";
+        document.getElementById("read-more-btn").classList.add("hidden");
+
+        let isVoiceActive =
+          window.kuroVoiceEnabled ??
+          localStorage.getItem("suara_kuro") !== "false";
+
+        try {
+          let response;
+          if (selectedFiles.length > 0) {
+            let formData = new FormData();
+            formData.append("message", text);
+            formData.append("model", activeModel);
+            formData.append("suara_kuro", isVoiceActive);
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+              formData.append("files", selectedFiles[i]);
+            }
+
+            response = await fetch("/send-with-file", {
+              method: "POST",
+              body: formData,
+            });
+
+            clearSelectedFile();
+          } else {
+            response = await fetch("/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                message: text,
+                model: activeModel,
+                suara_kuro: isVoiceActive,
+              }),
+            });
+          }
+        } catch (e) {
+          console.error("Gagal kirim:", e);
+          document.getElementById("dialogue-text").innerText =
+            "Gagal mengirim pesan atau file!";
+        }
+      }
+
+      setInterval(fetchStatus, 500);
+    </script>
+  </body>
+</html>
